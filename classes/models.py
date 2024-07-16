@@ -4,12 +4,12 @@ from sqlalchemy.orm import declarative_base, relationship
 Base = declarative_base()
 
 
-
 class VK_ID(Base):
     __tablename__ = 'vk_id'
 
     id_user = sq.Column(sq.Integer, primary_key=True)
     id_user_vk = sq.Column(sq.BigInteger,  nullable=False)
+
 
 class Favorits(Base):
     __tablename__ = 'favorits'
@@ -24,7 +24,6 @@ class VK_Favorit(Base):
 
     id_user = relationship(VK_ID, backref='vk_id')
     id_favorit = relationship(Favorits, backref='favorits')
-
 
 
 def create_tables(engine):
