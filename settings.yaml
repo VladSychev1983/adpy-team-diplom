@@ -1,8 +1,8 @@
 vk:
-  token: vk1.a.rPZPrMOsbIvxZV42VcH2n6LDKN7sYUpafeeh8n2aGwhadmQNQX-eNReRN7vnG0lw72XaoGHB7QLB7yIfj9ZvujQJ08A5XcqPAo8ea-hkrCunKmhZzndkAysSQ6Wt7y2SGwMxq7GoJlzD-XLtAmDQmWkRbSvWX4nkwBwfGFVottry7yc_yIoZKUqKcJgOtr7p2cYPq3lLKSxmwwaYo_emUQ
+  token: your_vk_token
 db:
-  db_name: VKdb
-  db_user: postgres
-  db_pass: Zz5572368
-  db_host: localhost
+  db_name: your_db
+  db_user: your_user
+  db_pass: your_pass
+  db_host: your_host
   db_port: 5432
