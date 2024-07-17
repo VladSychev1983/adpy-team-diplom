@@ -13,9 +13,12 @@ try:
 except ImportError:
     from yaml import Loader
 
+from classes.vk import VK
+
+
 if __name__ == '__main__':
     settings_dict = {}
-    stream = open("settings.yaml", 'r',encoding="utf-8")
+    stream = open("settings_.yaml", 'r',encoding="utf-8")
     settings_dict = yaml.load(stream, Loader)
 
     db_user = str(settings_dict["db"]["db_user"])
@@ -31,5 +34,9 @@ if __name__ == '__main__':
     
     Session = sessionmaker(bind=engine)
     session = Session()
+    
     #father work with vk classes.
+    vk_token = str(settings_dict["vk"]["token"])
+    vk_obj = VK(vk_token)
+    vk_obj.hello_message()
         
