@@ -8,13 +8,13 @@ class VK_ID(Base):
     __tablename__ = 'vk_id'
 
     id_user = sq.Column(sq.Integer, primary_key=True)
-    id_user_vk = sq.Column(sq.BigInteger,  nullable=False)
+    id_user_vk = sq.Column(sq.BigInteger, unique=True, nullable=False)
 
 
 class Favorits(Base):
     __tablename__ = 'favorits'
     id_favorit = sq.Column(sq.Integer, primary_key=True)
-    id_favorit_vk = sq.Column(sq.Integer, nullable=False)
+    id_favorit_vk = sq.Column(sq.Integer, unique=True, nullable=False)
 
 
 class VK_Favorit(Base):
