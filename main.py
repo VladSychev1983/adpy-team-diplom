@@ -41,6 +41,4 @@ if __name__ == '__main__':
     id_vk = vk_obj.hello_message()
     session.add(VK_ID(id_user_vk=id_vk))
     session.commit()
-    
 
-        

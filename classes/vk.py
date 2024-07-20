@@ -1,5 +1,6 @@
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
+from classes.models import Favorits, VK_ID, VK_Favorit
 
 class VK:
     def __init__(self,token) -> None:
@@ -34,8 +35,15 @@ class VK:
         pass
     def get_save_found_users():
         pass
-    def get_users_from_favorite():
-        pass
+    def get_users_from_favorite(self, id_vk, session):
+        favorit_list = []
+        idvk = session.query(VK_ID.id_user).filter(VK_ID.id_user_vk == id_vk)
+        query = session.query(Favorits.id_favorit_vk).select_from(Favorits).\
+            join(VK_Favorit, VK_Favorit.id_favorit_vk == Favorits.id_favorit).\
+            filter(VK_Favorit.id_user_vk == idvk).all()
+        for idfav in query:
+            favorit_list.append(idfav[0])
+        return favorit_list
     def send_users_from_favorite():
         pass
     def next_user():
