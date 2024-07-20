@@ -1,8 +1,8 @@
 vk:
-  token: vk1.a.rPZPrMOsbIvxZV42VcH2n6LDKN7sYUpafeeh8n2aGwhadmQNQX-eNReRN7vnG0lw72XaoGHB7QLB7yIfj9ZvujQJ08A5XcqPAo8ea-hkrCunKmhZzndkAysSQ6Wt7y2SGwMxq7GoJlzD-XLtAmDQmWkRbSvWX4nkwBwfGFVottry7yc_yIoZKUqKcJgOtr7p2cYPq3lLKSxmwwaYo_emUQ
+  token: 
 db:
-  db_name: team-vk
-  db_user: postgres
-  db_pass: 12345
-  db_host: localhost
-  db_port: 5432
+  db_name: 
+  db_user: 
+  db_pass: 
+  db_host: 
+  db_port: 
