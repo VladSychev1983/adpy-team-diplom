@@ -37,10 +37,8 @@ if __name__ == '__main__':
     
     #Далее работаем с классам VK получаем результаты и вызываем новые классы, записываем в базу.
     vk_token = str(settings_dict["vk"]["token"])
-    vk_obj = VK(vk_token)
-    id_vk = vk_obj.hello_message()
-    session.add(VK_ID(id_user_vk=id_vk))
-    session.commit()
-    
+    vk_obj = VK(vk_token,session)
+    vk_obj.hello_message()
 
-        
+    #session.add(VK_ID(id_user_vk=id_vk))
+    #session.commit()
