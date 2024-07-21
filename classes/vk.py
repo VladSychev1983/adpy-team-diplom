@@ -4,8 +4,9 @@ from vk_api.longpoll import VkLongPoll, VkEventType
 from classes.models import Favorits, VK_ID, VK_Favorit
 
 class VK:
-    def __init__(self,token) -> None:
+    def __init__(self,token,session) -> None:
         self.token = token
+        self.session = session
         vk_session = vk_api.VkApi(token=token)#токен
         self.vk = vk_session.get_api()
         self.longpoll = VkLongPoll(vk_session)
