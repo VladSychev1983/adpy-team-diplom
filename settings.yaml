@@ -1,5 +1,5 @@
 vk:
-  token: vk_token_here
+  token: vk_token_here1
 db:
   db_name: db_name_here
   db_user: db_user_here
