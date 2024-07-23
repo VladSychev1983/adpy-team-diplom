@@ -18,7 +18,7 @@ from classes.vk import VK
 
 if __name__ == '__main__':
     settings_dict = {}
-    stream = open("settings.yaml", 'r',encoding="utf-8")
+    stream = open("settings_.yaml", 'r',encoding="utf-8")
     settings_dict = yaml.load(stream, Loader)
 
     db_user = str(settings_dict["db"]["db_user"])
@@ -36,8 +36,9 @@ if __name__ == '__main__':
     session = Session()
     
     #Далее работаем с классам VK получаем результаты и вызываем новые классы, записываем в базу.
-    vk_token = str(settings_dict["vk"]["token"])
-    vk_obj = VK(vk_token,session)
+    vk_token = str(settings_dict["vk"]["group_token"])
+    vk_user_token = str(settings_dict["vk"]["user_token"])
+    vk_obj = VK(vk_token,vk_user_token,session)
     vk_obj.hello_message()
 
     #session.add(VK_ID(id_user_vk=id_vk))
