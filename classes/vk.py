@@ -121,10 +121,3 @@ class VK:
         pass
     def next_user():
         pass
-
-
-    @staticmethod
-    def bot_keybord_link(link):
-        keyboard = VkKeyboard(one_time=False, inline=True,)
-        keyboard.add_openlink_button("Профиль", link=link)
-        return keyboard.get_keyboard()
