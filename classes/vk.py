@@ -37,7 +37,6 @@ class VK:
                             self.send_message(msg_response,id_vk)
                         elif msg == "next":
                             next_counter +=1
-                            print(next_counter)
                             self.search_user(city,gender,age,id_vk,next_counter)
                             msg_response = 'Запрос успешно обработан!'
                             self.send_message(msg_response,id_vk)
@@ -167,8 +166,5 @@ class VK:
              favorit_list.append(idfav[0])
          return favorit_list
 
-    def send_users_from_favorite():
-        pass
-
-    def next_user():
+    def write_users_to_favorite():
         pass
