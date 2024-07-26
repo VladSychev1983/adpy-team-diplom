@@ -44,10 +44,12 @@ class VK:
     def send_message_with_photo(self,result:dict,user_id):
         for key,value in result.items():
             msg = f'{value["first_name"]} {value["last_name"]}\n'
-            photo = self.get_user_photo(key)
-            attachment = 'photo' + str(key) + '_' + str(photo)
-            self.vk.messages.send(user_id=user_id, message=msg, attachment=attachment, random_id=0)
-
+            photo_list = self.get_user_photo(key)
+            attachment = None
+            self.vk.messages.send(user_id=user_id, message=msg, random_id=0)
+            for photo in photo_list:
+                attachment = 'photo' + str(key) + '_' + str(photo)
+                self.vk.messages.send(user_id=user_id, attachment=attachment, random_id=0)
 
     def search_user(self,city,gender,age,id_vk):
         #Делаем запрос на поиск пользователей.
@@ -55,7 +57,7 @@ class VK:
         gender_int = None
         gender_int = 1 if gender.find("муж") == -1 else 2
         age_plus_year = int(age) + 1
-        params = {'hometown': city, 'sex': gender_int, 'status': 1, 'sort': 0, 'count': 3, 'age_from':age, 'age_to': age_plus_year,'v': 5.199, 'p1':'v1','fields':'photo_200'}
+        params = {'hometown': city, 'sex': gender_int, 'status': 1, 'sort': 0, 'count': 1, 'has_photo': 1, 'age_from':age, 'age_to': age_plus_year,'v': 5.199, 'p1':'v1','fields':'photo_200'}
         url = 'https://api.vk.com/method/users.search'
         response = requests.get(url, headers=self.headers, params=params)
         for idx in range(0,len(response.json()["response"]["items"])):
@@ -72,18 +74,18 @@ class VK:
         return city,gender,age
 
     def get_user_photo(self,owner_id):
-        params = {'owner_id': str(owner_id), 'album_id':'profile', 'count':'1', 'v': 5.199, 'p1':'v1', 'access_token':self.user_token}
+        photo_dict ={}
+        params = {'owner_id': str(owner_id), 'album_id':'profile', 'extended' : 1, 'v': 5.199, 'p1':'v1', 'access_token':self.user_token}
         url = 'https://api.vk.com/method/photos.get'
         response = requests.get(url, headers=self.headers, params=params)
-        photo = response.json()["response"]['items'][0]['id']
-        return photo
-    
-    def get_send_found_users():
-        pass
-    
-    def get_save_found_users():
-        pass
-    
+        for idx,photo in enumerate(response.json()['response']['items']):
+            photo = response.json()["response"]['items'][idx]['id']
+            likes = response.json()["response"]['items'][idx]["likes"]["count"]
+            photo_dict[photo] = likes
+        top_3_list = sorted(photo_dict.values(), key=lambda x: x, reverse=True)[:3]    
+        result_list = {x for x in photo_dict if photo_dict[x] in top_3_list}    
+        return result_list
+        
     def get_users_from_favorite(self, id_vk, session):
          favorit_list = []
          idvk = session.query(VK_ID.id_user).filter(VK_ID.id_user_vk == id_vk)
@@ -93,7 +95,9 @@ class VK:
          for idfav in query:
              favorit_list.append(idfav[0])
          return favorit_list
+
     def send_users_from_favorite():
         pass
+
     def next_user():
         pass
