@@ -18,7 +18,7 @@ from classes.vk import VK
 
 if __name__ == '__main__':
     settings_dict = {}
-    stream = open("settings_.yaml", 'r',encoding="utf-8")
+    stream = open("settings.yaml", 'r',encoding="utf-8")
     settings_dict = yaml.load(stream, Loader)
 
     db_user = str(settings_dict["db"]["db_user"])

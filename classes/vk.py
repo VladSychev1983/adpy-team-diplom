@@ -1,6 +1,7 @@
 import vk_api
 import re
 from vk_api.longpoll import VkLongPoll, VkEventType
+from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from classes.models import Favorits, VK_ID, VK_Favorit
 import requests
 from pprint import pprint
@@ -58,6 +59,7 @@ class VK:
         params = {'hometown': city, 'sex': gender_int, 'status': 1, 'sort': 0, 'count': 3, 'age_from':age, 'age_to': age_plus_year,'v': 5.199, 'p1':'v1','fields':'photo_200'}
         url = 'https://api.vk.com/method/users.search'
         response = requests.get(url, headers=self.headers, params=params)
+        print(response.json())
         for idx in range(0,len(response.json()["response"]["items"])):
             result[response.json()["response"]["items"][idx]["id"]] =  {
                 'photo_200': response.json()["response"]["items"][idx]["photo_200"],
@@ -84,16 +86,45 @@ class VK:
     def get_save_found_users():
         pass
     
-    def get_users_from_favorite(self, id_vk, session):
-         favorit_list = []
-         idvk = session.query(VK_ID.id_user).filter(VK_ID.id_user_vk == id_vk)
-         query = session.query(Favorits.id_favorit_vk).select_from(Favorits).\
-             join(VK_Favorit, VK_Favorit.id_favorit_vk == Favorits.id_favorit).\
-             filter(VK_Favorit.id_user_vk == idvk).all()
-         for idfav in query:
-             favorit_list.append(idfav[0])
-         return favorit_list
+    def get_users_from_favorite(self, id_vk):
+        favorit_list = []
+        favorit_dict = []
+        url = 'https://api.vk.com/method/users.get'
+        param = {
+            'access_token': self.token,
+            'fields': 'id, first_name, last_name, photo_200_orig',
+            'v': '5.199'
+        }
+        idvk = self.session.query(VK_ID.id_user).filter(VK_ID.id_user_vk == id_vk).all()[0][0]
+        query = self.session.query(Favorits.id_favorit_vk).select_from(Favorits).\
+            join(VK_Favorit, VK_Favorit.id_favorit_vk == Favorits.id_favorit).\
+            filter(VK_Favorit.id_user_vk == idvk).all()
+        for idfav in query:
+            favorit_list.append(idfav[0])
+        for id in favorit_list:
+            responce = requests.get(url=url, params={**param, 'user_ids': str(id)})
+
+            keybord_link = self.bot_keybord_link(f'https://vk.com/id{id}')
+            msg = f'{responce.json()["response"][0]["first_name"]} {responce.json()["response"][0]["last_name"]}\n'
+            self.vk.messages.send(user_id=id_vk, keyboard=keybord_link, message=msg, random_id=0)
+
+            favorit_dict.append({
+                'id': id,
+                'link': f'https://vk.com/id{id}',
+                'first_name': responce.json()['response'][0]['first_name'],
+                'last_name': responce.json()['response'][0]['last_name'],
+                'photo_url': responce.json()['response'][0]['photo_200_orig']
+            })
+        return favorit_dict
+
     def send_users_from_favorite():
         pass
     def next_user():
         pass
+
+
+    @staticmethod
+    def bot_keybord_link(link):
+        keyboard = VkKeyboard(one_time=False, inline=True,)
+        keyboard.add_openlink_button("Профиль", link=link)
+        return keyboard.get_keyboard()
