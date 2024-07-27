@@ -15,7 +15,6 @@ except ImportError:
 
 from classes.vk import VK
 
-
 def main():
     settings_dict = {}
     stream = open("settings.yaml", 'r',encoding="utf-8")
@@ -40,9 +39,6 @@ def main():
     vk_user_token = str(settings_dict["vk"]["user_token"])
     vk_obj = VK(vk_token,vk_user_token,session)
     vk_obj.hello_message()
-
-    #session.add(VK_ID(id_user_vk=id_vk))
-    #session.commit()
 
 if __name__ == '__main__':
     main()
