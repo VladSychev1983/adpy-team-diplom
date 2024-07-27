@@ -4,6 +4,7 @@ from vk_api.longpoll import VkLongPoll, VkEventType
 from classes.models import Favorits, VK_ID, VK_Favorit
 import requests
 from pprint import pprint
+import datetime
 
 class VK:
     def __init__(self,token,user_token,session) -> None:
@@ -43,11 +44,15 @@ class VK:
 
     def send_message_with_photo(self,result:dict,user_id):
         for key,value in result.items():
+            city,sex,bdate = self.get_user_info(key)
             msg = f'{value["first_name"]} {value["last_name"]}\n'
-            photo = self.get_user_photo(key)
-            attachment = 'photo' + str(key) + '_' + str(photo)
-            self.vk.messages.send(user_id=user_id, message=msg, attachment=attachment, random_id=0)
-
+            msg += f'Возраст {bdate} Пол: {sex} Город: {city}\n'
+            photo_list = self.get_user_photo(key)
+            attachment = None
+            self.vk.messages.send(user_id=user_id, message=msg, random_id=0)
+            for photo in photo_list:
+                attachment = 'photo' + str(key) + '_' + str(photo)
+                self.vk.messages.send(user_id=user_id, attachment=attachment, random_id=0)
 
     def search_user(self,city,gender,age,id_vk):
         #Делаем запрос на поиск пользователей.
@@ -55,7 +60,18 @@ class VK:
         gender_int = None
         gender_int = 1 if gender.find("муж") == -1 else 2
         age_plus_year = int(age) + 1
-        params = {'hometown': city, 'sex': gender_int, 'status': 1, 'sort': 0, 'count': 3, 'age_from':age, 'age_to': age_plus_year,'v': 5.199, 'p1':'v1','fields':'photo_200'}
+        params = {
+            'hometown': city, 
+            'sex': gender_int, 
+            'status': 1, 
+            'sort': 0, 
+            'count': 1, 
+            'has_photo': 1, 
+            'age_from':age, 
+            'age_to': age_plus_year,
+            'v': 5.199, 'p1':'v1',
+            'fields':'photo_200'
+            }
         url = 'https://api.vk.com/method/users.search'
         response = requests.get(url, headers=self.headers, params=params)
         for idx in range(0,len(response.json()["response"]["items"])):
@@ -72,18 +88,48 @@ class VK:
         return city,gender,age
 
     def get_user_photo(self,owner_id):
-        params = {'owner_id': str(owner_id), 'album_id':'profile', 'count':'1', 'v': 5.199, 'p1':'v1', 'access_token':self.user_token}
+        photo_dict ={}
+        params = {
+            'owner_id': str(owner_id), 
+            'album_id':'profile', 
+            'extended' : 1, 'v': 5.199, 
+            'p1':'v1', 
+            'access_token':self.user_token
+            }
         url = 'https://api.vk.com/method/photos.get'
         response = requests.get(url, headers=self.headers, params=params)
-        photo = response.json()["response"]['items'][0]['id']
-        return photo
+        for idx,photo in enumerate(response.json()['response']['items']):
+            photo = response.json()["response"]['items'][idx]['id']
+            likes = response.json()["response"]['items'][idx]["likes"]["count"]
+            photo_dict[photo] = likes
+        top_3_list = sorted(photo_dict.values(), key=lambda x: x, reverse=True)[:3]    
+        result_list = {x for x in photo_dict if photo_dict[x] in top_3_list}    
+        return result_list
     
-    def get_send_found_users():
-        pass
+    def get_user_info(self, user_id):
+        data = {}
+        url = 'https://api.vk.com/method/users.get'
+        params = {
+            'user_ids': user_id,
+            'fields': 'bdate, sex, home_town, city',
+            'v': 5.199,
+            'access_token':self.user_token
+        }
+        response = requests.get(url, headers=self.headers, params=params)
+        data = response.json()['response'][0]
+        city = data.get("home_town")
+        age = self.calculate_age(data.get("bdate"))
+        sex = data.get("sex")
+        sex = 'Женский' if sex == 1 else 'Мужской'
+        return city,sex,age
     
-    def get_save_found_users():
-        pass
-    
+    def calculate_age(self,birth_date):
+        (birth_day,birth_month,birth_year) = birth_date.split(".")
+        td=datetime.datetime.now().date() 
+        bd=datetime.date(int(birth_year),int(birth_month),int(birth_day))
+        age_years=int((td-bd).days /365.25)
+        return age_years
+
     def get_users_from_favorite(self, id_vk, session):
          favorit_list = []
          idvk = session.query(VK_ID.id_user).filter(VK_ID.id_user_vk == id_vk)
@@ -93,7 +139,9 @@ class VK:
          for idfav in query:
              favorit_list.append(idfav[0])
          return favorit_list
+
     def send_users_from_favorite():
         pass
+
     def next_user():
         pass
