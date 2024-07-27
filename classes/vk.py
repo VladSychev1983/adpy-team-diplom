@@ -32,16 +32,23 @@ class VK:
                         msg_response += '(Пример: Москва Мужской 30)'
                         if val := re.match(pattern,msg):
                             (city,gender,age) = self._get_data(val,id_vk)
-                            self.search_user(city,gender,age,id_vk)
+                            id_fav = self.search_user(city,gender,age,id_vk)
                             msg_response = 'Запрос успешно обработан!'
                             self.send_message(msg_response,id_vk)
                         elif msg == "next":
                             next_counter +=1
-                            self.search_user(city,gender,age,id_vk,next_counter)
+                            id_fav = self.search_user(city,gender,age,id_vk,next_counter)
                             msg_response = 'Запрос успешно обработан!'
                             self.send_message(msg_response,id_vk)
-                        elif msg:
-                            self.send_message(msg_response,id_vk)                         
+                        elif msg == 'favorites':
+                            self.get_users_from_favorite(id_vk)
+                            msg_response = 'Запрос успешно обработан!'
+                            self.send_message(msg_response, id_vk)
+                        elif msg == 'save':
+                            self.write_users_to_favorite(id_vk, id_fav)
+                            msg_response = 'Запрос успешно обработан!'
+                            self.send_message(msg_response, id_vk)
+
                         else:
                             self.send_message(msg_response,id_vk)
 
@@ -62,6 +69,7 @@ class VK:
             for photo in photo_list:
                 attachment = 'photo' + str(key) + '_' + str(photo)
                 self.vk.messages.send(user_id=user_id, attachment=attachment, random_id=0)
+            return key
 
     def search_user(self,city,gender,age,id_vk,offset=0):
         #Делаем запрос на поиск пользователей.
@@ -84,13 +92,15 @@ class VK:
             }
         url = 'https://api.vk.com/method/users.search'
         response = requests.get(url, headers=self.headers, params=params)
+        print(response.json())
         for idx in range(0,len(response.json()["response"]["items"])):
             result[response.json()["response"]["items"][idx]["id"]] =  {
                 'photo_200': response.json()["response"]["items"][idx]["photo_200"],
                 'last_name': response.json()["response"]["items"][idx]["last_name"],
                 'first_name': response.json()["response"]["items"][idx]["first_name"]
             }
-        self.send_message_with_photo(result,id_vk)
+        result = self.send_message_with_photo(result,id_vk)
+        return result
 
     def _get_data(self,user_query,id_vk):
         res_data = user_query.group()
