@@ -1,9 +1,0 @@
-vk:
-  group_token: vk_group_token_here
-  user_token: vk_user_token_here 
-db:
-  db_name: db_name_here
-  db_user: db_user_here
-  db_pass: db_pass_here
-  db_host: db_host_here
-  db_port: 5432
