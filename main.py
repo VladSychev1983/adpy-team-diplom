@@ -16,7 +16,7 @@ except ImportError:
 from classes.vk import VK
 
 
-if __name__ == '__main__':
+def main():
     settings_dict = {}
     stream = open("settings.yaml", 'r',encoding="utf-8")
     settings_dict = yaml.load(stream, Loader)
@@ -43,3 +43,6 @@ if __name__ == '__main__':
 
     #session.add(VK_ID(id_user_vk=id_vk))
     #session.commit()
+
+if __name__ == '__main__':
+    main()
