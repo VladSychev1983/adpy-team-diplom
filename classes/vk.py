@@ -84,7 +84,6 @@ class VK:
             }
         url = 'https://api.vk.com/method/users.search'
         response = requests.get(url, headers=self.headers, params=params)
-        print(response.json())
         for idx in range(0,len(response.json()["response"]["items"])):
             result[response.json()["response"]["items"][idx]["id"]] =  {
                 'photo_200': response.json()["response"]["items"][idx]["photo_200"],
