@@ -185,3 +185,27 @@ class VK:
         keyboard = VkKeyboard(one_time=False, inline=True,)
         keyboard.add_openlink_button("Профиль", link=link)
         return keyboard.get_keyboard()
+
+    def get_users_from_favorite(self, id_vk, session):
+         favorit_list = []
+         idvk = session.query(VK_ID.id_user).filter(VK_ID.id_user_vk == id_vk)
+         query = session.query(Favorits.id_favorit_vk).select_from(Favorits).\
+             join(VK_Favorit, VK_Favorit.id_favorit_vk == Favorits.id_favorit).\
+             filter(VK_Favorit.id_user_vk == idvk).all()
+         for idfav in query:
+             favorit_list.append(idfav[0])
+         return favorit_list
+
+    def write_users_to_favorite(self, id_vk, id_favorite):
+        idvk = self.session.query(VK_ID.id_user).filter(VK_ID.id_user_vk == id_vk)
+        if idvk is None:
+            self.session.add(VK_ID(id_user_vk=id_vk))
+            self.session.commit()
+            idvk = self.session.query(VK_ID.id_user).filter(VK_ID.id_user_vk == id_vk)
+        idfav = self.session.query(Favorits.id_favorit).filter(Favorits.id_favorit_vk == id_favorite)
+        if idfav is None:
+            self.session.add(Favorits(id_favorit_vk = id_favorite))
+            self.session.commit()
+            idfav = self.session.query(Favorits.id_favorit).filter(Favorits.id_favorit_vk == id_favorite)
+        self.session.add(VK_Favorit(id_user_vk=idvk, id_favorit_vk=idfav))
+        self.session.commit()
