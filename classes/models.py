@@ -3,10 +3,8 @@ from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
 
-
 class VK_ID(Base):
     __tablename__ = 'vk_id'
-
     id_user = sq.Column(sq.Integer, primary_key=True)
     id_user_vk = sq.Column(sq.BigInteger,  nullable=False)
 
@@ -18,9 +16,10 @@ class Favorits(Base):
 
 
 class VK_Favorit(Base):
-    __tablename__ = 'VK_Favorit'
-    id_user_vk = sq.Column(sq.Integer, sq.ForeignKey('vk_id.id_user'), primary_key=True)
-    id_favorit_vk = sq.Column(sq.Integer, sq.ForeignKey('favorits.id_favorit'), primary_key=True)
+    __tablename__ = 'vk_favorit'
+    id = sq.Column(sq.Integer, primary_key=True, autoincrement="auto")
+    id_user_vk = sq.Column(sq.Integer, sq.ForeignKey('vk_id.id_user'), nullable=False)
+    id_favorit_vk = sq.Column(sq.Integer, sq.ForeignKey('favorits.id_favorit'), nullable=False)
 
     id_user = relationship(VK_ID, backref='vk_id')
     id_favorit = relationship(Favorits, backref='favorits')
