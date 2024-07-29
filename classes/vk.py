@@ -32,16 +32,23 @@ class VK:
                         msg_response += '(Пример: Москва Мужской 30)'
                         if val := re.match(pattern,msg):
                             (city,gender,age) = self._get_data(val,id_vk)
-                            self.search_user(city,gender,age,id_vk)
+                            id_fav = self.search_user(city,gender,age,id_vk)
                             msg_response = 'Запрос успешно обработан!'
                             self.send_message(msg_response,id_vk)
                         elif msg == "next":
                             next_counter +=1
-                            self.search_user(city,gender,age,id_vk,next_counter)
+                            id_fav = self.search_user(city,gender,age,id_vk,next_counter)
                             msg_response = 'Запрос успешно обработан!'
                             self.send_message(msg_response,id_vk)
-                        elif msg:
-                            self.send_message(msg_response,id_vk)                         
+                        elif msg == 'favorites':
+                            self.get_users_from_favorite(id_vk)
+                            msg_response = 'Запрос успешно обработан!'
+                            self.send_message(msg_response, id_vk)
+                        elif msg == 'save':
+                            self.write_users_to_favorite(id_vk, id_fav)
+                            msg_response = 'Запрос успешно обработан!'
+                            self.send_message(msg_response, id_vk)
+
                         else:
                             self.send_message(msg_response,id_vk)
 
@@ -62,6 +69,7 @@ class VK:
             for photo in photo_list:
                 attachment = 'photo' + str(key) + '_' + str(photo)
                 self.vk.messages.send(user_id=user_id, attachment=attachment, random_id=0)
+            return key
 
     def search_user(self,city,gender,age,id_vk,offset=0):
         #Делаем запрос на поиск пользователей.
@@ -90,7 +98,8 @@ class VK:
                 'last_name': response.json()["response"]["items"][idx]["last_name"],
                 'first_name': response.json()["response"]["items"][idx]["first_name"]
             }
-        self.send_message_with_photo(result,id_vk)
+        result = self.send_message_with_photo(result,id_vk)
+        return result
 
     def _get_data(self,user_query,id_vk):
         res_data = user_query.group()
@@ -149,22 +158,57 @@ class VK:
         keyboard.add_button('favorites', color=VkKeyboardColor.SECONDARY)
         return keyboard.get_keyboard()
     
+    def get_users_from_favorite(self, id_vk):
+        favorit_list = []
+        favorit_dict = []
+        url = 'https://api.vk.com/method/users.get'
+        param = {
+             'access_token': self.token,
+             'fields': 'id, first_name, last_name, photo_200_orig',
+             'v': '5.199'
+         }
+        idvk = self.session.query(VK_ID.id_user).filter(VK_ID.id_user_vk == id_vk).all()[0][0]
+        query = self.session.query(Favorits.id_favorit_vk).select_from(Favorits).\
+            join(VK_Favorit, VK_Favorit.id_favorit_vk == Favorits.id_favorit).\
+            filter(VK_Favorit.id_user_vk == idvk).all()
+        for idfav in query:
+            favorit_list.append(idfav[0])
+        for id in favorit_list:
+            city,sex,age = self.get_user_info(id)
+            photos_list = self.get_user_photo(id)
+            responce = requests.get(url=url, params={**param, 'user_ids': str(id)})
+            keybord_link = self.bot_keybord_link(f'https://vk.com/id{id}')
+            msg = f'{responce.json()["response"][0]["first_name"]} {responce.json()["response"][0]["last_name"]}\n'
+            msg += f'Возраст {age} Пол: {sex} Город: {city}\n'
+            photo = list(photos_list)[0]
+            attachment = 'photo' + str(id) + '_' + str(photo)
+            self.vk.messages.send(user_id=id_vk, message=msg, random_id=0)
+            self.vk.messages.send(user_id=id_vk, keyboard=keybord_link, attachment=attachment, random_id=0)
+            favorit_dict.append({
+                'id': id,
+                'link': f'https://vk.com/id{id}',
+                'first_name': responce.json()['response'][0]['first_name'],
+                'last_name': responce.json()['response'][0]['last_name'],
+                'photo_url': responce.json()['response'][0]['photo_200_orig']
+            })
+        return favorit_dict
+
     @staticmethod
     def bot_keybord_link(link):
         keyboard = VkKeyboard(one_time=False, inline=True,)
         keyboard.add_openlink_button("Профиль", link=link)
         return keyboard.get_keyboard()
 
-
-    def get_users_from_favorite(self, id_vk, session):
-         favorit_list = []
-         idvk = session.query(VK_ID.id_user).filter(VK_ID.id_user_vk == id_vk)
-         query = session.query(Favorits.id_favorit_vk).select_from(Favorits).\
-             join(VK_Favorit, VK_Favorit.id_favorit_vk == Favorits.id_favorit).\
-             filter(VK_Favorit.id_user_vk == idvk).all()
-         for idfav in query:
-             favorit_list.append(idfav[0])
-         return favorit_list
-
-    def write_users_to_favorite():
-        pass
+    def write_users_to_favorite(self, id_vk, id_favorite):
+        idvk = self.session.query(VK_ID.id_user).filter(VK_ID.id_user_vk == id_vk).first()
+        if idvk is None:
+            self.session.add(VK_ID(id_user_vk=id_vk))
+            self.session.commit()
+            idvk = self.session.query(VK_ID.id_user).filter(VK_ID.id_user_vk == id_vk).first()
+        idfav = self.session.query(Favorits.id_favorit).filter(Favorits.id_favorit_vk == id_favorite).first()
+        if idfav is None:
+            self.session.add(Favorits(id_favorit_vk = id_favorite))
+            self.session.commit()
+            idfav = self.session.query(Favorits.id_favorit).filter(Favorits.id_favorit_vk == id_favorite)
+        self.session.add(VK_Favorit(id_user_vk=idvk[0], id_favorit_vk=idfav))
+        self.session.commit()
