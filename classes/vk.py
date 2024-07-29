@@ -92,7 +92,6 @@ class VK:
             }
         url = 'https://api.vk.com/method/users.search'
         response = requests.get(url, headers=self.headers, params=params)
-        print(response.json())
         for idx in range(0,len(response.json()["response"]["items"])):
             result[response.json()["response"]["items"][idx]["id"]] =  {
                 'photo_200': response.json()["response"]["items"][idx]["photo_200"],
@@ -164,10 +163,10 @@ class VK:
         favorit_dict = []
         url = 'https://api.vk.com/method/users.get'
         param = {
-            'access_token': self.token,
-            'fields': 'id, first_name, last_name, photo_200_orig',
-            'v': '5.199'
-        }
+             'access_token': self.token,
+             'fields': 'id, first_name, last_name, photo_200_orig',
+             'v': '5.199'
+         }
         idvk = self.session.query(VK_ID.id_user).filter(VK_ID.id_user_vk == id_vk).all()[0][0]
         query = self.session.query(Favorits.id_favorit_vk).select_from(Favorits).\
             join(VK_Favorit, VK_Favorit.id_favorit_vk == Favorits.id_favorit).\
@@ -175,12 +174,16 @@ class VK:
         for idfav in query:
             favorit_list.append(idfav[0])
         for id in favorit_list:
+            city,sex,age = self.get_user_info(id)
+            photos_list = self.get_user_photo(id)
             responce = requests.get(url=url, params={**param, 'user_ids': str(id)})
-
             keybord_link = self.bot_keybord_link(f'https://vk.com/id{id}')
             msg = f'{responce.json()["response"][0]["first_name"]} {responce.json()["response"][0]["last_name"]}\n'
-            self.vk.messages.send(user_id=id_vk, keyboard=keybord_link, message=msg, random_id=0)
-
+            msg += f'Возраст {age} Пол: {sex} Город: {city}\n'
+            photo = list(photos_list)[0]
+            attachment = 'photo' + str(id) + '_' + str(photo)
+            self.vk.messages.send(user_id=id_vk, message=msg, random_id=0)
+            self.vk.messages.send(user_id=id_vk, keyboard=keybord_link, attachment=attachment, random_id=0)
             favorit_dict.append({
                 'id': id,
                 'link': f'https://vk.com/id{id}',
